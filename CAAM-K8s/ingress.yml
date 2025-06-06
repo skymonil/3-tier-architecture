@@ -1,0 +1,33 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress
+  namespace: default
+  
+spec:
+  ingressClassName: nginx   # Specify the Ingress class
+  rules:
+  - host: 1d83-2405-201-4f-a9e3-a00-27ff-fe74-14e0.ngrok-free.app
+    http: 
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: backend   # Your backend service name
+            port:
+              number: 5000  # Port of the backend service
+      - path: /github-webhook
+        pathType: Prefix
+        backend:
+          service: 
+            name: jenkins-service
+            port:
+              number: 80
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend   # Your frontend service name
+            port:
+              number: 80

@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: seed-db-job
+spec:
+  template:
+    spec:
+      containers:
+        - name: seed-db
+          image: skymonil/caam-backend
+          imagePullPolicy: Always
+          command: ["npm", "run", "seed"]
+          env:
+            - name: MONGODB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-uri-secret
+                  key: MONGODB_URI
+      restartPolicy: Never
+  backoffLimit: 2
+

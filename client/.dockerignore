@@ -1,0 +1,30 @@
+# Ignore node_modules to prevent unnecessary dependencies in the image
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Ignore build artifacts (usually generated in CI/CD)
+build
+dist
+
+# Ignore local environment files
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# Ignore editor and system files
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# Ignore git-related files
+.git
+.gitignore
+
+# Ignore miscellaneous files
+coverage/
+logs/
+*.log
