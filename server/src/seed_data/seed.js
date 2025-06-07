@@ -17,7 +17,7 @@ import { teachers } from "./teacher.data.js";
 
 dotenv.config();
 
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/your-db-name";
+const MONGODB_URI = "mongodb://caam:caam-123@caam-cluster-975049978724.ap-south-1.docdb-elastic.amazonaws.com:27017/caamdb?authMechanism=SCRAM-SHA-1&tls=true";
 
 const seed = async () => {
   try {

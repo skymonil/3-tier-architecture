@@ -22,8 +22,8 @@ EOF
 
   network_interfaces {
     associate_public_ip_address = false
-    subnet_id                   = aws_subnet.private_1a.id # will be overridden by ASG
-    security_groups             = [aws_security_group.backend_sg.id]
+    subnet_id                   = var.private_subnet_ids[0] # will be overridden by ASG
+    security_groups             = [aws_security_group.ec2_sg.id]
   }
 
   tag_specifications {
@@ -39,10 +39,7 @@ resource "aws_autoscaling_group" "backend_asg" {
   desired_capacity          = 2
   max_size                  = 3
   min_size                  = 1
-  vpc_zone_identifier       = [
-    aws_subnet.private_1a.id,
-    aws_subnet.private_1b.id
-  ]
+  vpc_zone_identifier = var.private_subnet_ids
   target_group_arns         = [aws_lb_target_group.backend_tg.arn]
   health_check_type         = "EC2"
   health_check_grace_period = 300

@@ -63,6 +63,14 @@ resource "aws_cloudfront_distribution" "frontend_cf" {
   enabled             = true
   default_root_object = "index.html"
 
+ custom_error_response {
+    error_code            = 403  # AWS returns 403 for "Access Denied"
+    response_code         = 200  # Show the custom error page instead of an error
+    response_page_path    = "/index.html"  # Path to your custom error page in S3
+  }
+
+
+
   default_cache_behavior {
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
@@ -93,4 +101,22 @@ resource "aws_cloudfront_distribution" "frontend_cf" {
   minimum_protocol_version       = "TLSv1.2_2019"
 }
 }
+
+resource "local_file" "env_js" {
+  content = <<EOF
+window._env_ = {
+  BACKEND_URL: "${var.backend_url}"
+};
+EOF
+
+  filename = "${path.module}/dist/env.js"
+}
+resource "aws_s3_object" "env_js" {
+  bucket = aws_s3_bucket.frontend-bucket.id
+  key    = "env.js"
+  source = local_file.env_js.filename
+  content_type = "application/javascript"
+ # acl    = "public-read"
+}
+
 
