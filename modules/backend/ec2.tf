@@ -9,12 +9,11 @@ resource "aws_launch_template" "backend_lt" {
 
   user_data = base64encode(<<EOF
 #!/bin/bash
-yum update -y
-yum install -y git curl
-curl -fsSL https://rpm.nodesource.com/setup_18.x | bash -
-yum install -y nodejs
-git clone https://github.com/skymonil/3-tier-architecture /home/ec2-user/app
-cd /home/ec2-user/app
+sudo su
+apt update -y
+sudo apt install nodejs npm -y
+git clone https://github.com/skymonil/3-tier-architecture 
+cd 3-tier-architecture/server
 npm install
 npm run dev
 EOF
