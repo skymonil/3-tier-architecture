@@ -17,7 +17,7 @@ import { teachers } from "./teacher.data.js";
 
 dotenv.config();
 
-const MONGODB_URI = "mongodb://caam:caam-123@caam-cluster-975049978724.ap-south-1.docdb-elastic.amazonaws.com:27017/caamdb?authMechanism=SCRAM-SHA-1&tls=true";
+const MONGODB_URI = "mongodb+srv://m98513313:Mongo123@e-commerce.qrafroh.mongodb.net/caamdb?retryWrites=true&w=majority&appName=E-Commerce";
 
 const seed = async () => {
   try {
