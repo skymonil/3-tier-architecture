@@ -13,12 +13,13 @@ resource "aws_lb" "public_alb" {
 # ALB Target Group
 resource "aws_lb_target_group" "backend_tg" {
   name     = "backend-tg"
-  port     = 3000
+  port     = 5000
   protocol = "HTTP"
   vpc_id   = var.vpc_id
 
   health_check {
     path                = "/health"
+    port     = 5000
     interval            = 30
     timeout             = 5
     healthy_threshold   = 2
@@ -52,4 +53,7 @@ resource "aws_lb_listener" "https_listener" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.backend_tg.arn
   }
+  
 }
+
+

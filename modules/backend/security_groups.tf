@@ -11,6 +11,14 @@ resource "aws_security_group" "ec2_sg" {
     cidr_blocks = ["0.0.0.0/0"]  # ✅ Accept HTTP from CloudFront or anywhere
   }
 
+  ingress {
+    description = "Allow HTTP from anywhere (CloudFront)"
+    from_port   = 5000
+    to_port     = 5000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]  # ✅ Accept HTTP from CloudFront or anywhere
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -36,6 +44,14 @@ resource "aws_security_group" "alb_sg" {
     description = "Allow HTTP from anywhere (CloudFront)"
     from_port   = 80
     to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]  # ✅ Accept HTTP from CloudFront or anywhere
+  }
+
+   ingress {
+    description = "Allow HTTP from anywhere (CloudFront)"
+    from_port   = 5000
+    to_port     = 5000
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]  # ✅ Accept HTTP from CloudFront or anywhere
   }

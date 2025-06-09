@@ -9,6 +9,8 @@ module "backend" {
   vpc_id = module.global.backend_vpc_id
  public_subnet_ids   = module.global.public_subnet_ids
   private_subnet_ids  = module.global.private_subnet_ids
+  HCP_CLIENT_ID = var.HCP_CLIENT_ID
+  HCP_CLIENT_SECRET = var.HCP_CLIENT_SECRET
 }
 
 module "frontend" {

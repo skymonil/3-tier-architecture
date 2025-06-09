@@ -4,20 +4,49 @@ resource "aws_launch_template" "backend_lt" {
   instance_type = "t2.micro"
 
   iam_instance_profile {
-    name = aws_iam_instance_profile.ssm_profile.name
+    name = aws_iam_instance_profile.ec2_profile.name
   }
 
-  user_data = base64encode(<<EOF
+ user_data = base64encode(<<EOF
+#!/bin/bash
 #!/bin/bash
 sudo su
+
+# Install dependencies
 apt update -y
-sudo apt install nodejs npm -y
+apt install -y nodejs npm awscli jq curl
+
+# Get HCP creds from SSM (secure)
+export HCP_CLIENT_ID=$(aws ssm get-parameter --name "/app/HCP_CLIENT_ID" --with-decryption --query "Parameter.Value" --output text --region ap-south-1)
+export HCP_CLIENT_SECRET=$(aws ssm get-parameter --name "/app/HCP_CLIENT_SECRET" --with-decryption --query "Parameter.Value" --output text --region ap-south-1)
+
+# Get temporary HCP access token
+export HCP_API_TOKEN=$(curl --silent --location "https://auth.idp.hashicorp.com/oauth2/token" \
+--header "Content-Type: application/x-www-form-urlencoded" \
+--data-urlencode "client_id=$HCP_CLIENT_ID" \
+--data-urlencode "client_secret=$HCP_CLIENT_SECRET" \
+--data-urlencode "grant_type=client_credentials" \
+--data-urlencode "audience=https://api.hashicorp.cloud" | jq -r .access_token)
+
+# Fetch secret (DB connection string)
+DB_CONN_STRING=$(curl --silent --location "https://api.cloud.hashicorp.com/secrets/2023-11-28/organizations/20b0be26-ec7c-4394-9a6b-2c8009beadce/projects/9d4b5f1e-0cc7-443b-84f2-362bf4916116/apps/caam/secrets:open" \
+--request GET \
+--header "Authorization: Bearer $HCP_API_TOKEN" | jq -r '.secrets.DB_CRED')
+
+# Clone and run app
 git clone https://github.com/skymonil/3-tier-architecture 
 cd 3-tier-architecture/server
+
+# Create .env
+cat <<EOF > .env
+MONGODB_URI=$DB_CONN_STRING
+JWT_SECRET=JWT_SECRET
 npm install
 npm run dev
+
 EOF
-  )
+)
+
 
   network_interfaces {
     associate_public_ip_address = false
@@ -57,4 +86,23 @@ resource "aws_autoscaling_group" "backend_asg" {
   lifecycle {
     create_before_destroy = true
   }
+}
+
+
+resource "aws_ssm_parameter" "HCP_CLIENT_ID" {
+  name        = "/app/HCP_CLIENT_ID"
+  type        = "SecureString"
+  value       = var.HCP_CLIENT_ID 
+  key_id      = aws_kms_key.ssm_kms_key.arn
+}
+resource "aws_ssm_parameter" "HCP_CLIENT_SECRET" {
+  name        = "/app/HCP_CLIENT_SECRET"
+  type        = "SecureString"
+  value       = var.HCP_CLIENT_SECRET  
+  key_id      = aws_kms_key.ssm_kms_key.arn
+}
+
+resource "aws_kms_key" "ssm_kms_key" {
+  description             = "KMS key for SSM parameters"
+  deletion_window_in_days = 30
 }

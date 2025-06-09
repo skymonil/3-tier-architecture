@@ -5,7 +5,7 @@ dotenv.config();
 
 export const connectDB = async () => {
   try {
-    const uri = `mongodb+srv://m98513313:Mongo123@e-commerce.qrafroh.mongodb.net/caamdb?retryWrites=true&w=majority&appName=E-Commerce`;
+    const uri = process.env.MONGODB_URI;
     if (!uri) throw new Error("MongoDB connection URI is missing!");
 
     const conn = await mongoose.connect(uri, {

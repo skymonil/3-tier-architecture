@@ -17,7 +17,7 @@ import { teachers } from "./teacher.data.js";
 
 dotenv.config();
 
-const MONGODB_URI = "mongodb+srv://m98513313:Mongo123@e-commerce.qrafroh.mongodb.net/caamdb?retryWrites=true&w=majority&appName=E-Commerce";
+const MONGODB_URI = process.env.MONGODB_URI;
 
 const seed = async () => {
   try {
