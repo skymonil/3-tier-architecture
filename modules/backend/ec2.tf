@@ -1,6 +1,6 @@
 resource "aws_launch_template" "backend_lt" {
   name_prefix   = "backend-lt"
-  image_id      = "ami-02521d90e7410d9f0" # Use Amazon Linux 2 or Ubuntu
+  image_id      = "ami-0ae0bfa220651da22" 
   instance_type = "t2.micro"
 
   iam_instance_profile {
@@ -9,12 +9,10 @@ resource "aws_launch_template" "backend_lt" {
 
  user_data = base64encode(<<EOF
 #!/bin/bash
-#!/bin/bash
 sudo su
 
 # Install dependencies
-apt update -y
-apt install -y nodejs npm awscli jq curl
+
 
 # Get HCP creds from SSM (secure)
 export HCP_CLIENT_ID=$(aws ssm get-parameter --name "/app/HCP_CLIENT_ID" --with-decryption --query "Parameter.Value" --output text --region ap-south-1)
@@ -31,19 +29,38 @@ export HCP_API_TOKEN=$(curl --silent --location "https://auth.idp.hashicorp.com/
 # Fetch secret (DB connection string)
 DB_CONN_STRING=$(curl --silent --location "https://api.cloud.hashicorp.com/secrets/2023-11-28/organizations/20b0be26-ec7c-4394-9a6b-2c8009beadce/projects/9d4b5f1e-0cc7-443b-84f2-362bf4916116/apps/caam/secrets:open" \
 --request GET \
---header "Authorization: Bearer $HCP_API_TOKEN" | jq -r '.secrets.DB_CRED')
+--header "Authorization: Bearer $HCP_API_TOKEN" | jq -r '.secrets[] | select(.name == "DB_CRED").static_version.value')
+
+EMAIL_ID=$(curl --silent --location "https://api.cloud.hashicorp.com/secrets/2023-11-28/organizations/20b0be26-ec7c-4394-9a6b-2c8009beadce/projects/9d4b5f1e-0cc7-443b-84f2-362bf4916116/apps/caam/secrets:open" \
+--request GET \
+--header "Authorization: Bearer $HCP_API_TOKEN" | jq -r '.secrets[] | select(.name == "EMAIL_ID").static_version.value')
+
+EMAIL_PASSWORD=$(curl --silent --location "https://api.cloud.hashicorp.com/secrets/2023-11-28/organizations/20b0be26-ec7c-4394-9a6b-2c8009beadce/projects/9d4b5f1e-0cc7-443b-84f2-362bf4916116/apps/caam/secrets:open" \
+--request GET \
+--header "Authorization: Bearer $HCP_API_TOKEN" | jq -r '.secrets[] | select(.name == "EMAIL_PASSWORD").static_version.value')
+
+JWT_SECRET=$(curl --silent --location "https://api.cloud.hashicorp.com/secrets/2023-11-28/organizations/20b0be26-ec7c-4394-9a6b-2c8009beadce/projects/9d4b5f1e-0cc7-443b-84f2-362bf4916116/apps/caam/secrets:open" \
+--request GET \
+--header "Authorization: Bearer $HCP_API_TOKEN" | jq -r '.secrets[] | select(.name == "JWT_SECRET").static_version.value')
 
 # Clone and run app
 git clone https://github.com/skymonil/3-tier-architecture 
 cd 3-tier-architecture/server
-
-# Create .env
-cat <<EOF > .env
+cd src
+cat <<ENV_EOF > .env
 MONGODB_URI=$DB_CONN_STRING
-JWT_SECRET=JWT_SECRET
-npm install
-npm run dev
+JWT_SECRET=$JWT_SECRET
+EMAIL_PASSWORD=$EMAIL_PASSWORD
+EMAIL_ID=$EMAIL_ID
+ENV_EOF
 
+
+
+npm install -g pm2
+npm install
+pm2 start app.js --name app
+pm2 startup
+pm2 save
 EOF
 )
 
@@ -76,6 +93,7 @@ resource "aws_autoscaling_group" "backend_asg" {
     id      = aws_launch_template.backend_lt.id
     version = "$Latest"
   }
+  
 
   tag {
     key                 = "Name"

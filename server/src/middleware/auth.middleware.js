@@ -4,7 +4,7 @@ import Admin from "../models/Admin.model.js";
 
 const verifyToken = (token) => {
   try {
-    return jwt.verify(token, process.env.SECRET_KEY);
+    return jwt.verify(token, process.env.JWT_SECRET);
   } catch (err) {
     if (err.name === "TokenExpiredError") {
       throw new Error("TokenExpired");

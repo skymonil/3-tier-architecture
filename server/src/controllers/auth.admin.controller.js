@@ -203,7 +203,7 @@ export const adminLogin = async (req, res) => {
       });
     }
 
-    if (!process.env.SECRET_KEY) {
+    if (!process.env.JWT_SECRET) {
       return res.status(500).json({
         error: "JWT secret is not defined in environment variables",
       });

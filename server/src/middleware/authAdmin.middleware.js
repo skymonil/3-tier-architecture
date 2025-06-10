@@ -13,7 +13,7 @@ export const authenticateAdmin = async (req, res, next) => {
     }
 
     // Verify the token
-    const decoded_token = jwt.verify(token, process.env.SECRET_KEY);
+    const decoded_token = jwt.verify(token, process.env.JWT_SECRET);
 
     if (!decoded_token) {
       return res.status(401).json({ message: "Unauthorized - Invalid Token" });

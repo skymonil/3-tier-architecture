@@ -1,3 +1,4 @@
+data "aws_caller_identity" "current" {}
 resource "aws_iam_role" "ec2_ssm_role" {
   name = "EC2SSMAccessRole"
 
@@ -39,19 +40,34 @@ resource "aws_iam_policy_attachment" "kms_decrypt_attach" {
 
 resource "aws_kms_key_policy" "ssm_kms_policy" {
   key_id = aws_kms_key.ssm_kms_key.id
+
   policy = jsonencode({
-    Statement = [{
-      Effect    = "Allow",
-      Principal = {
-        AWS = "arn:aws:iam::975049978724:role/EC2SSMAccessRole"
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid: "AllowRootAccountFullAccess",
+        Effect: "Allow",
+        Principal: {
+          AWS: "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        },
+        Action: "kms:*",
+        Resource: "*"
       },
-      Action = [
-        "kms:Decrypt"
-      ],
-      Resource = "*"
-    }]
+      {
+        Sid: "AllowEC2SSMDecryptAccess",
+        Effect: "Allow",
+        Principal: {
+          AWS: "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/EC2SSMAccessRole"
+        },
+        Action: [
+          "kms:Decrypt"
+        ],
+        Resource: "*"
+      }
+    ]
   })
 }
+
 
 resource "aws_iam_policy_attachment" "ssm_access" {
   name       = "SSMAccess"

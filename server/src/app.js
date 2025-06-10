@@ -22,11 +22,18 @@ const PORT = 5000;
 dotenv.config();
 connectDB();
 
-app.use( cors({
-    origin: ["http://localhost:5173", "https://615915.xyz"],
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: [
+    "http://localhost:5173", 
+    "https://615915.xyz",
+    "https://www.615915.xyz" // Add www subdomain if needed
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+  preflightContinue: false,
+  optionsSuccessStatus: 204
+}));
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());

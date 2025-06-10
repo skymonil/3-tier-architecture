@@ -6,8 +6,8 @@ dotenv.config();
 export const generateToken = (userID, res) => {
   let token;
   try {
-    console.log("SECRET_KEY:", process.env.SECRET_KEY); // Debugging line
-    token = jwt.sign({ userID }, process.env.SECRET_KEY, { expiresIn: '7d' });
+    console.log("SECRET_KEY:", process.env.JWT_SECRET); // Debugging line
+    token = jwt.sign({ userID }, process.env.JWT_SECRET, { expiresIn: '7d' });
   } catch (err) {
     console.error('Error generating token:', err);
     return; // Return early if token generation fails
