@@ -26,7 +26,8 @@ app.use(cors({
   origin: [
     "http://localhost:5173", 
     "https://615915.xyz",
-    "https://www.615915.xyz" // Add www subdomain if needed
+    "https://www.615915.xyz", // Add www subdomain if needed
+    "https://staging.615915.xyz"
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
