@@ -1,4 +1,6 @@
+const isDev = process.env.NODE_ENV !== 'production';
 import express from "express";
+import helmet from "helmet"
 import cors from "cors";
 import { connectDB } from "./lib/db.js";
 import cookieParser from "cookie-parser";
@@ -27,7 +29,8 @@ app.use(cors({
     "http://localhost:5173", 
     "https://615915.xyz",
     "https://www.615915.xyz", // Add www subdomain if needed
-    "https://staging.615915.xyz"
+    "https://staging.615915.xyz",
+    
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
@@ -35,10 +38,33 @@ app.use(cors({
   preflightContinue: false,
   optionsSuccessStatus: 204
 }));
+
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.json());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "https://checkout.razorpay.com"], // Add trusted CDNs if used
+      styleSrc: ["'self'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:"],
+     connectSrc: isDev
+        ? ["'self'", "http://localhost:5173"] // allow dev frontend
+        : ["'self'", "https://615915.xyz"],   // allow prod frontend
+      frameSrc: ["https://api.razorpay.com", "https://checkout.razorpay.com"],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+    },
+  },
+  referrerPolicy: { policy: 'no-referrer' },
+  crossOriginEmbedderPolicy: false, // Optional based on your use case
+}));
+
+
 
 app.use("/api/auth", authRoute);
 app.use("/api/student", studentRoute);

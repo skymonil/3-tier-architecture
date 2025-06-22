@@ -43,6 +43,7 @@ resource "aws_s3_bucket_policy" "aws_s3_bucket_policy" {
       }
     ]
   })
+  depends_on = [aws_s3_bucket_public_access_block.s3_bucket_public_access_block]
 }
 
 resource "aws_cloudfront_distribution" "frontend_cf" {
